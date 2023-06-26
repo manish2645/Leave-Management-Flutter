@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
-
 import 'package:http/http.dart' as http;
 
 class MyForm extends StatefulWidget {
@@ -17,6 +16,7 @@ class MyForm extends StatefulWidget {
 
 class MyFormState extends State<MyForm> {
   static final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
 
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _fromDateController = TextEditingController();
@@ -169,11 +169,23 @@ Future<void> submitForm() async {
         );
       } else {
         _formKey.currentState!.reset();
-        Fluttertoast.showToast(
-          msg: 'Successfully Submitted',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
+          // ignore: use_build_context_synchronously
+          showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('Success'),
+              content: Text('Leave Applied Successfully'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Text('OK'),
+                ),
+              ],
+            );
+          },
         );
         clearForm();
       }
