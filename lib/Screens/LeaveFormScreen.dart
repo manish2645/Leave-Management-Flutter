@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+
 import 'package:http/http.dart' as http;
 
 class MyForm extends StatefulWidget {
@@ -23,13 +24,11 @@ class MyFormState extends State<MyForm> {
 
   File? _selectedFile;
 
-  //validate name
-  bool validateName(String? name) {
-    final RegExp regex = RegExp(r'^[a-zA-Z][a-zA-Z0-9 ]*$');
-
-    return regex.hasMatch(name!) && name.trim().isNotEmpty;
-  }
-
+//validate name
+bool validateName(String? name) {
+  final RegExp regex = RegExp(r'^[a-zA-Z ]+$');
+  return regex.hasMatch(name!) && name.trim().isNotEmpty;
+}
   // date pickers
 Future<void> selectDate(BuildContext context, bool isFromDate) async {
   final DateTime? pickedDate = await showDatePicker(
@@ -38,12 +37,9 @@ Future<void> selectDate(BuildContext context, bool isFromDate) async {
     firstDate: DateTime.now().subtract(const Duration(days: 365 * 30)),
     lastDate: DateTime.now().add(const Duration(days: 365)),
     selectableDayPredicate: (DateTime date) {
-      // Check leave type and restrict selection based on rules
       if (_selectedLeaveType == 'Earned Leave' || _selectedLeaveType == 'Casual Leave') {
-        // Disable selection of past dates
-        return date.isAfter(DateTime.now().subtract(Duration(days: 1)));
+        return date.isAfter(DateTime.now().subtract(const Duration(days: 1)));
       } else {
-        // Allow selection of any date for other leave types
         return true;
       }
     },
@@ -57,7 +53,6 @@ Future<void> selectDate(BuildContext context, bool isFromDate) async {
         _fromDateController.text = formatter.format(pickedDate);
       });
     } else {
-      // Check if selected "To" date is before the "From" date
       final DateTime fromDate = formatter.parse(_fromDateController.text);
       if (pickedDate.isBefore(fromDate)) {
         Fluttertoast.showToast(
@@ -75,25 +70,28 @@ Future<void> selectDate(BuildContext context, bool isFromDate) async {
   }
 }
 
-// file upload
-void uploadFile() async {
-  FilePickerResult? result = await FilePicker.platform.pickFiles();
+// upload file
+Future<void> uploadFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'png']
+    );
 
-  if (result != null) {
-    setState(() {
-      _selectedFile = File(result.files.single.path!);
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('File Uploaded Successfully')),
-    );
-  } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('No File Selected')),
-    );
+    if (result != null && result.paths.isNotEmpty) {
+      String? path = result.paths.first;
+      _selectedFile = File(path!);
+    } else {
+      Fluttertoast.showToast(
+          msg: 'Select a File',
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+      );
+    }
   }
-}
 
 
+//clear form
   void clearForm() {
     _fullNameController.clear();
     _fromDateController.clear();
@@ -104,9 +102,31 @@ void uploadFile() async {
     _selectedTeamNames = null;
   }
 
+
 // send data
 Future<void> submitForm() async {
   if (_formKey.currentState!.validate()) {
+    if (_selectedLeaveType == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a leave type')),
+        );
+        return;
+      }
+
+      if (_selectedTeamNames == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a team name')),
+        );
+        return;
+      }
+
+      if (_selectedReportingManager == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a reporting manager')),
+        );
+        return;
+      }
+
     if (_selectedLeaveType == 'Sick Leave' && _selectedFile == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please Upload a File')),
@@ -133,7 +153,7 @@ Future<void> submitForm() async {
       ));
     }
 
-    const url = 'http://192.168.0.94:8080/postleave';
+    const url = 'http://10.0.50.56:8080/postleave';
     Dio dio = Dio();
     try {
       Response response = await dio.post(
@@ -168,10 +188,10 @@ Future<void> submitForm() async {
   }
 }
 
-
+// feth leave types
   Future<List<String>> fetchLeaveTypes() async {
     final response =
-        await http.get(Uri.parse('http://192.168.0.94:8080/leaveTypes'));
+        await http.get(Uri.parse('http://10.0.50.56:8080/leaveTypes'));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -185,10 +205,10 @@ Future<void> submitForm() async {
       throw Exception('Failed to fetch leave types');
     }
   }
-
+//fetch team names
   Future<List<String>> fetchTeamNames() async {
     final response =
-        await http.get(Uri.parse('http://192.168.0.94:8080/teamNames'));
+        await http.get(Uri.parse('http://10.0.50.56:8080/teamNames'));
 
     if (response.statusCode == 200) {
       final Map<String, dynamic> data = json.decode(response.body);
@@ -205,9 +225,9 @@ Future<void> submitForm() async {
 
   List<String> leaveTypes = [];
   List<String> teamNames = [];
-  String? _selectedLeaveType = '';
-  String? _selectedTeamNames = '';
-  String? _selectedReportingManager = '';
+  String? _selectedLeaveType;
+  String? _selectedTeamNames;
+  String? _selectedReportingManager;
 
   List<String> reportingManagers = [
     'Surya Kant',
@@ -232,7 +252,7 @@ Future<void> submitForm() async {
         teamNames = response;
       });
     }).catchError((error) {
-      print('Error fetching leave types: $error');
+      print('Error fetching team names: $error');
     });
   }
 
@@ -256,8 +276,9 @@ Future<void> submitForm() async {
               TextFormField(
                 controller: _fullNameController,
                 decoration: const InputDecoration(
-                  icon: Icon(Icons.person),
+                  icon: Icon(Icons.person, color: Colors.black),
                   label: Text('Full Name'),
+                  
                 ),
                 validator: (value) {
                   if (!validateName(value)) {
@@ -269,18 +290,6 @@ Future<void> submitForm() async {
               const SizedBox(
                 height: 16.0,
               ),
-              // Leave Types
-              // TextFormField(
-              //   initialValue: _selectedLeaveType,
-              //   readOnly: true,
-              //   decoration: const InputDecoration(
-              //     labelText: 'Leave Type',
-              //     icon: Icon(Icons.work),
-              //   ),
-              // ),
-              // const SizedBox(
-              //   height: 10.0,
-              // ),
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 const Row(
                   children: [
@@ -290,6 +299,7 @@ Future<void> submitForm() async {
                       'Leave Type',
                       style: TextStyle(fontSize: 16),
                     ),
+                    
                   ],
                 ),
                 Column(
@@ -301,7 +311,7 @@ Future<void> submitForm() async {
                           groupValue: _selectedLeaveType,
                           onChanged: (String? value) {
                             setState(() {
-                              _selectedLeaveType = value!;
+                                _selectedLeaveType = value;
                             });
                           },
                         ),
@@ -310,11 +320,10 @@ Future<void> submitForm() async {
                     );
                   }).toList(),
                 ),
-                //
                 TextFormField(
                   controller: _fromDateController,
                   decoration: const InputDecoration(
-                    icon: Icon(Icons.date_range),
+                    icon: Icon(Icons.date_range, color: Colors.black),
                     labelText: 'From Date',
                   ),
                   readOnly: true,
@@ -331,7 +340,7 @@ Future<void> submitForm() async {
                 TextFormField(
                   controller: _toDateController,
                   decoration: const InputDecoration(
-                    icon: Icon(Icons.date_range),
+                    icon: Icon(Icons.date_range, color: Colors.black),
                     labelText: 'To Date',
                   ),
                   readOnly: true,
@@ -345,7 +354,7 @@ Future<void> submitForm() async {
                     return null;
                   },
                 ),
-                // Team name
+                
                 const SizedBox(
                   height: 16.0,
                 ),
@@ -371,7 +380,7 @@ Future<void> submitForm() async {
                               groupValue: _selectedTeamNames,
                               onChanged: (String? value) {
                                 setState(() {
-                                  _selectedTeamNames = value!;
+                                  _selectedTeamNames = value;
                                 });
                               },
                             ),
@@ -380,16 +389,14 @@ Future<void> submitForm() async {
                         );
                       }).toList(),
                     ),
-                    //
                     const SizedBox(height: 12),
-                    // Reporting Manager
                     DropdownButtonFormField<String>(
                       value: reportingManagers.isNotEmpty
                           ? reportingManagers[0]
                           : '',
                       onChanged: (String? newValue) {
                         setState(() {
-                          _selectedReportingManager = newValue!;
+                          _selectedReportingManager = newValue;
                         });
                       },
                       items: reportingManagers
@@ -402,9 +409,10 @@ Future<void> submitForm() async {
                       decoration: const InputDecoration(
                         labelText: 'Reporting Manager',
                         labelStyle: TextStyle(fontSize: 20),
-                        icon: Icon(Icons.person_2),
+                        icon: Icon(Icons.person_2,color: Colors.black,),
                       ),
                     ),
+                    
                     const SizedBox(
                       height: 16.0,
                     ),
@@ -441,9 +449,7 @@ Future<void> submitForm() async {
                       ],
                     ),
                   ),
-
                     const SizedBox(height: 16.0),
-
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.blue,

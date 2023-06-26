@@ -16,11 +16,11 @@ class HomeScreen extends StatelessWidget {
             bottom: const TabBar(
               tabs: [
                 Tab(text: 'Leave Form'),
-                Tab(text: 'View Table'),
+                Tab(text: 'Applied Leaves'),
               ],
             ),
           ),
-          body: TabBarView(
+          body: const TabBarView(
             children: [
               MyForm(),
               ViewTablePage(),

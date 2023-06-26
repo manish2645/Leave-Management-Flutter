@@ -1,9 +1,11 @@
+import 'dart:ffi';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
 import 'package:easy_image_viewer/easy_image_viewer.dart';
 import 'package:form_app/Screens/FileViewerScreen.dart';
+
 
 class ViewTablePage extends StatefulWidget {
   const ViewTablePage({Key? key}) : super(key: key);
@@ -21,18 +23,18 @@ class _ViewTablePageState extends State<ViewTablePage> {
     fetchLeaveData();
   }
 
-  void openPdfViewer(String pdfUrl) {
+  void openPdfViewer(String pdfUrl, String fileName) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => PdfViewerScreen(pdfUrl: pdfUrl),
+        builder: (context) => PdfViewerScreen(pdfUrl: pdfUrl, fileName: fileName),
       ),
     );
   }
 
   Future<void> fetchLeaveData() async {
     try {
-      const url = 'http://192.168.0.94:8080/getleave';
+      const url = 'http://10.0.50.56:8080/getleave';
       Dio dio = Dio();
       Response response = await dio.get(url);
       if (response.statusCode == 200) {
@@ -49,7 +51,7 @@ class _ViewTablePageState extends State<ViewTablePage> {
       }
     } catch (e) {
       Fluttertoast.showToast(
-        msg: 'Error: $e',
+        msg: 'No Data Available',
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
         timeInSecForIosWeb: 1,
@@ -65,9 +67,9 @@ class _ViewTablePageState extends State<ViewTablePage> {
         child: SingleChildScrollView(
           child: DataTable(
             columns: const [
-              // DataColumn(
-              //   label: Text('Serial No'),
-              // ),
+              DataColumn(
+                label: Text('Serial No'),
+              ),
               DataColumn(
                 label: Text('Name'),
               ),
@@ -90,9 +92,11 @@ class _ViewTablePageState extends State<ViewTablePage> {
                 label: Text('Reporter'),
               ),
             ],
-            rows: leaveData.map((data) {
+            rows: leaveData.asMap().entries.map((entry) {
+              int index = entry.key + 1;
+              Map<String, dynamic> data = entry.value;
               return DataRow(cells: [
-                //DataCell(Text(data['id']??'')),
+                DataCell(Text(index.toString())),
                 DataCell(Text(data['name'] ?? '')),
                 DataCell(Text(data['fromDate'] ?? '')),
                 DataCell(Text(data['toDate'] ?? '')),
@@ -106,10 +110,11 @@ class _ViewTablePageState extends State<ViewTablePage> {
                   onTap: () {
                     if (data['filePath'] != null) {
                       if (data['filePath'].toLowerCase().endsWith('.pdf')) {
-                        String pdfUrl = 'http://192.168.0.94:8080/file/${data['filePath']}';
-                        openPdfViewer(pdfUrl);
+                        String fileName = data['filePath'];
+                        String pdfUrl = 'http://10.0.50.56:8080/file/${data['filePath']}';
+                        openPdfViewer(pdfUrl, fileName);
                       } else if (data['filePath'].toLowerCase().endsWith('.png')) {
-                        final imageProvider = Image.network('http://192.168.0.94:8080/file/${data['filePath']}').image;
+                        final imageProvider = Image.network('http://10.0.50.56:8080/${data['filePath']}').image;
                         showImageViewer(context, imageProvider, onViewerDismissed: () {
                           print("dismissed");
                         });
