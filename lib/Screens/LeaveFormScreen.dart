@@ -1,10 +1,10 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:intl/intl.dart';
+import 'dart:convert' show json;
+import 'dart:io' show File;
+import 'package:dio/dio.dart' show Dio, FormData, MultipartFile, Response;
+import 'package:flutter/material.dart' show AlertDialog, BuildContext, Colors, Column, Container, CrossAxisAlignment, DropdownButtonFormField, DropdownMenuItem, EdgeInsets, ElevatedButton, FontWeight, Form, FormState, GlobalKey, Icon, Icons, InputDecoration, Key, ListView, Navigator, OutlineInputBorder, Padding, Radio, Row, Scaffold, ScaffoldMessenger, SizedBox, SnackBar, State, StatefulWidget, Text, TextButton, TextEditingController, TextFormField, TextStyle, Widget, showDatePicker, showDialog;
+import 'package:file_picker/file_picker.dart' show FilePicker, FilePickerResult, FileType;
+import 'package:fluttertoast/fluttertoast.dart' show Fluttertoast, Toast, ToastGravity;
+import 'package:intl/intl.dart' show DateFormat;
 import 'package:http/http.dart' as http;
 
 class MyForm extends StatefulWidget {
@@ -161,11 +161,23 @@ Future<void> submitForm() async {
         data: data,
       );
       if (response.statusCode != 201) {
-        Fluttertoast.showToast(
-          msg: 'Unsuccessful - Something Went Wrong',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
+        // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Failed'),
+              content:const  Text('Failed! Try Again?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
         );
       } else {
         _formKey.currentState!.reset();
@@ -174,14 +186,14 @@ Future<void> submitForm() async {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: Text('Success'),
-              content: Text('Leave Applied Successfully'),
+              title: const Text('Success'),
+              content:const  Text('Leave Applied Successfully'),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
-                  child: Text('OK'),
+                  child: const Text('OK'),
                 ),
               ],
             );
@@ -190,12 +202,24 @@ Future<void> submitForm() async {
         clearForm();
       }
     } catch (e) {
-      Fluttertoast.showToast(
-        msg: 'Error $e',
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 1,
-      );
+      // ignore: use_build_context_synchronously
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Failed'),
+              content:const  Text('Failed! Try Again?'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
+        );
     }
   }
 }
@@ -256,7 +280,11 @@ Future<void> submitForm() async {
         leaveTypes = response;
       });
     }).catchError((error) {
-      print('Error fetching leave types: $error');
+      Fluttertoast.showToast(
+        msg:"Failed to fetch leave types",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
     });
 
     fetchTeamNames().then((response) {
@@ -264,7 +292,11 @@ Future<void> submitForm() async {
         teamNames = response;
       });
     }).catchError((error) {
-      print('Error fetching team names: $error');
+      Fluttertoast.showToast(
+        msg:"Failed to fetch team names",
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.BOTTOM,
+      );
     });
   }
 
@@ -272,7 +304,7 @@ Future<void> submitForm() async {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-          padding: const EdgeInsets.all(16.0),
+          margin: const EdgeInsets.all(10.0),
           child: Form(
             key: _formKey,
             child: ListView(children: <Widget>[
@@ -285,9 +317,11 @@ Future<void> submitForm() async {
                       color: Colors.blue),
                 ),
               ),
+              const SizedBox(height: 16.0,),
               TextFormField(
                 controller: _fullNameController,
                 decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
                   icon: Icon(Icons.person, color: Colors.black),
                   label: Text('Full Name'),
                   
@@ -302,11 +336,13 @@ Future<void> submitForm() async {
               const SizedBox(
                 height: 16.0,
               ),
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Column(
+              crossAxisAlignment: CrossAxisAlignment.start, 
+              children: [
                 const Row(
                   children: [
                     Icon(Icons.work_off),
-                    SizedBox(width: 10),
+                    SizedBox(width: 16.0),
                     Text(
                       'Leave Type',
                       style: TextStyle(fontSize: 16),
@@ -314,27 +350,31 @@ Future<void> submitForm() async {
                     
                   ],
                 ),
-                Column(
-                  children: leaveTypes.map((String type) {
-                    return Row(
-                      children: [
-                        Radio<String>(
-                          value: type,
-                          groupValue: _selectedLeaveType,
-                          onChanged: (String? value) {
-                            setState(() {
-                                _selectedLeaveType = value;
-                            });
-                          },
-                        ),
-                        Text(type),
-                      ],
-                    );
-                  }).toList(),
-                ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 25),
+                    child: Column(
+                      children: leaveTypes.map((String type) {
+                        return Row(
+                          children: [
+                            Radio<String>(
+                              value: type,
+                              groupValue: _selectedLeaveType,
+                              onChanged: (String? value) {
+                                setState(() {
+                                    _selectedLeaveType = value;
+                                });
+                              },
+                            ),
+                            Text(type),
+                          ],
+                        );
+                      }).toList(),
+                    ),
+                  ),
                 TextFormField(
                   controller: _fromDateController,
                   decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
                     icon: Icon(Icons.date_range, color: Colors.black),
                     labelText: 'From Date',
                   ),
@@ -349,9 +389,11 @@ Future<void> submitForm() async {
                     return null;
                   },
                 ),
+                const SizedBox(height: 20.0),
                 TextFormField(
                   controller: _toDateController,
                   decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
                     icon: Icon(Icons.date_range, color: Colors.black),
                     labelText: 'To Date',
                   ),
@@ -376,30 +418,33 @@ Future<void> submitForm() async {
                     const Row(
                       children: [
                         Icon(Icons.group),
-                        SizedBox(width: 10),
+                        SizedBox(width: 16.0),
                         Text(
                           'Team Names',
                           style: TextStyle(fontSize: 16),
                         ),
                       ],
                     ),
-                    Column(
-                      children: teamNames.map((String name) {
-                        return Row(
-                          children: [
-                            Radio<String>(
-                              value: name,
-                              groupValue: _selectedTeamNames,
-                              onChanged: (String? value) {
-                                setState(() {
-                                  _selectedTeamNames = value;
-                                });
-                              },
-                            ),
-                            Text(name),
-                          ],
-                        );
-                      }).toList(),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 25),
+                      child: Column(
+                        children: teamNames.map((String name) {
+                          return Row(
+                            children: [
+                              Radio<String>(
+                                value: name,
+                                groupValue: _selectedTeamNames,
+                                onChanged: (String? value) {
+                                  setState(() {
+                                    _selectedTeamNames = value;
+                                  });
+                                },
+                              ),
+                              Text(name),
+                            ],
+                          );
+                        }).toList(),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     DropdownButtonFormField<String>(
@@ -419,6 +464,7 @@ Future<void> submitForm() async {
                         );
                       }).toList(),
                       decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
                         labelText: 'Reporting Manager',
                         labelStyle: TextStyle(fontSize: 20),
                         icon: Icon(Icons.person_2,color: Colors.black,),
@@ -451,6 +497,7 @@ Future<void> submitForm() async {
                       children: [
                         const Text('Select File'),
                         if (_selectedFile != null)
+                         
                           Padding(
                             padding: const EdgeInsets.only(left: 8.0),
                             child: Text(

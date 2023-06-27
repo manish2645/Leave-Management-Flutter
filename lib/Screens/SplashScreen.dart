@@ -29,16 +29,16 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children:[
-            Image(image: AssetImage('assets/logo.png'), width: 100,),
-            Text("XenonStack Pvt Ltd", style: TextStyle(fontSize: 40, fontWeight: FontWeight.w500),),
-            SpinKitWaveSpinner(
-              color: Color.fromARGB(255, 59, 153, 25),
-              size: 80.0,
+            Image(image: AssetImage('assets/logo.png'), width: 120,),
+            Text("XenonStack", style: TextStyle(fontSize: 50, fontWeight: FontWeight.w700),),
+            SpinKitSpinningLines(
+              color: Color.fromARGB(255, 102, 161, 209),
+              size: 100.0,
             )
           ]
         ),
       ), 
-      backgroundColor: Color.fromARGB(255, 182, 228, 255), 
+      backgroundColor: Colors.white
     );
   }
 }
