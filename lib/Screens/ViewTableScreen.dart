@@ -1,8 +1,8 @@
-import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:easy_image_viewer/easy_image_viewer.dart';
-import 'package:form_app/Screens/FileViewerScreen.dart';
+import 'package:dio/dio.dart' show Dio, Response;
+import 'package:flutter/material.dart' show Axis, BuildContext, Colors, DataCell, DataColumn, DataRow, DataTable, GestureDetector, Image, Key, MaterialPageRoute, Navigator, Scaffold, SingleChildScrollView, State, StatefulWidget, Text, TextStyle, Widget;
+import 'package:fluttertoast/fluttertoast.dart' show Fluttertoast, Toast, ToastGravity;
+import 'package:easy_image_viewer/easy_image_viewer.dart' show showImageViewer;
+import 'package:form_app/Screens/FileViewerScreen.dart' show PdfViewerScreen;
 
 
 class ViewTablePage extends StatefulWidget {

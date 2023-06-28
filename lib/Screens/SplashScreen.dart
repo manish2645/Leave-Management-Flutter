@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
-import 'package:form_app/Screens/HomeScreen.dart';
+import 'package:flutter/material.dart' show AssetImage, BuildContext, Color, Colors, Column, FontWeight, Image, Key, MainAxisAlignment, MaterialPageRoute, Navigator, Scaffold, SizedBox, State, StatefulWidget, Text, TextStyle, Widget;
+import 'package:flutter_spinkit/flutter_spinkit.dart' show SpinKitSpinningLines;
+import 'package:form_app/Screens/HomeScreen.dart' show HomeScreen;
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
