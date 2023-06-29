@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:dio/dio.dart' show Dio, Response;
 import 'package:flutter/material.dart' show Axis, BuildContext, Colors, DataCell, DataColumn, DataRow, DataTable, GestureDetector, Image, Key, MaterialPageRoute, Navigator, Scaffold, SingleChildScrollView, State, StatefulWidget, Text, TextStyle, Widget;
 import 'package:fluttertoast/fluttertoast.dart' show Fluttertoast, Toast, ToastGravity;
@@ -14,21 +16,6 @@ class ViewTablePage extends StatefulWidget {
 
 class _ViewTablePageState extends State<ViewTablePage> {
   List<Map<String, dynamic>> leaveData = [];
-
-  @override
-  void initState() {
-    super.initState();
-    fetchLeaveData();
-  }
-
-  void openPdfViewer(String pdfUrl, String fileName) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PdfViewerScreen(pdfUrl: pdfUrl, fileName: fileName),
-      ),
-    );
-  }
 
   Future<void> fetchLeaveData() async {
     try {
@@ -55,6 +42,22 @@ class _ViewTablePageState extends State<ViewTablePage> {
         timeInSecForIosWeb: 1,
       );
     }
+  }
+
+  void openPdfViewer(String pdfUrl, String fileName) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfViewerScreen(pdfUrl: pdfUrl, fileName: fileName),
+      ),
+    );
+  }
+
+
+  @override
+  void initState() {
+    super.initState();
+    fetchLeaveData();
   }
 
   @override
@@ -114,7 +117,7 @@ class _ViewTablePageState extends State<ViewTablePage> {
                       } else if (data['filePath'].toLowerCase().endsWith('.png')) {
                         final imageProvider = Image.network('http://10.0.50.56:8080/${data['filePath']}').image;
                         showImageViewer(context, imageProvider, onViewerDismissed: () {
-                          print("dismissed");
+                          print('dismissed');
                         });
                       }
                     }

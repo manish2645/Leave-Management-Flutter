@@ -1,5 +1,8 @@
-import 'package:flutter/material.dart' show BuildContext, MaterialApp, StatelessWidget, Widget, runApp;
-import 'Screens/SplashScreen.dart';
+import 'package:flutter/material.dart' show BuildContext, MaterialApp, ModalRoute, StatelessWidget, Widget, runApp;
+import 'package:form_app/Screens/FileViewerScreen.dart';
+import 'package:form_app/Screens/HomeScreen.dart' show HomeScreen;
+import 'Screens/SplashScreen.dart' show SplashScreen;
+
 
 void main() {
   runApp(const MyApp());
@@ -10,9 +13,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: SplashScreen(),
+      title: 'Routes of the App',
+      initialRoute: '/',
+      routes: {
+          '/':(context) => const SplashScreen(),
+          '/home':(context) => const HomeScreen(),
+      },
     );
   }
 }

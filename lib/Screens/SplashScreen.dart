@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' show AssetImage, BuildContext, Color, Colors, Column, FontWeight, Image, Key, MainAxisAlignment, MaterialPageRoute, Navigator, Scaffold, SizedBox, State, StatefulWidget, Text, TextStyle, Widget;
-import 'package:flutter_spinkit/flutter_spinkit.dart' show SpinKitSpinningLines;
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:form_app/Screens/HomeScreen.dart' show HomeScreen;
 
 class SplashScreen extends StatefulWidget {
@@ -14,13 +14,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void initState() {
   super.initState();
-  Future.delayed(const Duration(seconds: 3)).then((value) => {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomeScreen()),
-        )
-      });
-  }
-
+  Future.delayed(const Duration(seconds: 4)).then((value) => 
+        Navigator.of(context).popAndPushNamed('/home')
+      );
+    }
+  
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
@@ -30,12 +28,12 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children:[
             Image(image: AssetImage('assets/logo.png'), width: 120,),
-            Text("XenonStack", style: TextStyle(fontSize: 50, fontWeight: FontWeight.w700),),
-            SpinKitSpinningLines(
-              color: Color.fromARGB(255, 102, 161, 209),
-              size: 100.0,
+            Text("XenonStack", style: TextStyle(fontSize: 50, fontWeight: FontWeight.w700,color: Colors.black)),
+            SpinKitCircle(
+              color: Colors.black,
+              size: 70.0,
             )
-          ]
+          ],
         ),
       ), 
       backgroundColor: Colors.white

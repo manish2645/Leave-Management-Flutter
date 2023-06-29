@@ -15,7 +15,6 @@ class PdfViewerScreen extends StatelessWidget {
       ),
       body: SfPdfViewer.network(pdfUrl,
       onDocumentLoaded: (PdfDocumentLoadedDetails details) {
-      print(details.document.pages.count);
       },
     ),
     );

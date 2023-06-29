@@ -1,7 +1,8 @@
 import 'dart:convert' show json;
 import 'dart:io' show File;
+import 'dart:ui';
 import 'package:dio/dio.dart' show Dio, FormData, MultipartFile, Response;
-import 'package:flutter/material.dart' show AlertDialog, BuildContext, Colors, Column, Container, CrossAxisAlignment, DropdownButtonFormField, DropdownMenuItem, EdgeInsets, ElevatedButton, FontWeight, Form, FormState, GlobalKey, Icon, Icons, InputDecoration, Key, ListView, Navigator, OutlineInputBorder, Padding, Radio, Row, Scaffold, ScaffoldMessenger, SizedBox, SnackBar, State, StatefulWidget, Text, TextButton, TextEditingController, TextFormField, TextStyle, Widget, showDatePicker, showDialog;
+import 'package:flutter/material.dart' show AlertDialog, BuildContext, Colors, Column, Container, CrossAxisAlignment, DropdownButtonFormField, DropdownMenuItem, EdgeInsets, ElevatedButton, FontWeight, Form, FormState, GlobalKey, Icon, Icons, InputDecoration, Key, ListView, Navigator, OutlineInputBorder, Padding, Radio, Row, Scaffold, ScaffoldMessenger, SizedBox, SnackBar, State, StatefulWidget, Text, TextButton, TextEditingController, TextFormField, TextOverflow, TextStyle, Widget, showDatePicker, showDialog;
 import 'package:file_picker/file_picker.dart' show FilePicker, FilePickerResult, FileType;
 import 'package:fluttertoast/fluttertoast.dart' show Fluttertoast, Toast, ToastGravity;
 import 'package:intl/intl.dart' show DateFormat;
@@ -34,7 +35,7 @@ Future<void> selectDate(BuildContext context, bool isFromDate) async {
   final DateTime? pickedDate = await showDatePicker(
     context: context,
     initialDate: DateTime.now(),
-    firstDate: DateTime.now().subtract(const Duration(days: 365 * 30)),
+    firstDate: DateTime.now().subtract(const Duration(days: 365 * 1)),
     lastDate: DateTime.now().add(const Duration(days: 365)),
     selectableDayPredicate: (DateTime date) {
       if (_selectedLeaveType == 'Earned Leave' || _selectedLeaveType == 'Casual Leave') {
@@ -59,7 +60,6 @@ Future<void> selectDate(BuildContext context, bool isFromDate) async {
           msg: 'Please select a valid to date!',
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1,
         );
       } else {
         setState(() {
@@ -166,7 +166,7 @@ Future<void> submitForm() async {
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
-              title: const Text('Failed'),
+              title: const Text('Failed!'),
               content:const  Text('Failed! Try Again?'),
               actions: [
                 TextButton(
@@ -208,7 +208,7 @@ Future<void> submitForm() async {
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Failed'),
-              content:const  Text('Failed! Try Again?'),
+              content:const  Text('Something went wrong!'),
               actions: [
                 TextButton(
                   onPressed: () {
@@ -281,7 +281,7 @@ Future<void> submitForm() async {
       });
     }).catchError((error) {
       Fluttertoast.showToast(
-        msg:"Failed to fetch leave types",
+        msg: "Failed to fetch leave",
         toastLength: Toast.LENGTH_SHORT,
         gravity: ToastGravity.BOTTOM,
       );
@@ -497,12 +497,12 @@ Future<void> submitForm() async {
                       children: [
                         const Text('Select File'),
                         if (_selectedFile != null)
-                         
                           Padding(
                             padding: const EdgeInsets.only(left: 8.0),
                             child: Text(
                               _selectedFile!.path.split('/').last,
-                              style: const TextStyle(fontSize: 16),
+                              style: const TextStyle(fontSize: 16, color: Colors.black),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                       ],
